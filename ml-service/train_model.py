@@ -5,17 +5,10 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from imblearn.over_sampling import SMOTE
 
-# Load dataset
 df = pd.read_csv("stroke_data.csv")
-
-# Drop ID column
 if "id" in df.columns:
     df.drop("id", axis=1, inplace=True)
-
-# Handle missing values
 df["bmi"] = df["bmi"].fillna(df["bmi"].mean())
-
-# Encode categorical columns
 df["gender"] = df["gender"].map({"Male": 1, "Female": 0})
 df["ever_married"] = df["ever_married"].map({"Yes": 1, "No": 0})
 df["Residence_type"] = df["Residence_type"].map({"Urban": 1, "Rural": 0})
@@ -34,11 +27,7 @@ df["work_type"] = df["work_type"].map({
     "Private": 3,
     "Self-employed": 4
 })
-
-# Drop any remaining missing rows
 df.dropna(inplace=True)
-
-# Feature list (IMPORTANT: keep order same everywhere)
 FEATURES = [
     "gender",
     "age",
@@ -55,14 +44,8 @@ FEATURES = [
 X = df[FEATURES]
 y = df["stroke"]
 
-# Handle class imbalance
-
-
-# Scale features (Logistic Regression NEEDS this)
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
-
-# Train Logistic Regression model
 model = LogisticRegression(
     max_iter=1000,
     class_weight="balanced",
@@ -73,7 +56,6 @@ model.fit(X_scaled, y)
 print("Coefficients:")
 for f, c in zip(FEATURES, model.coef_[0]):
     print(f, round(c, 3))
-# Save model and scaler
 joblib.dump(model, "stroke_model.pkl")
 joblib.dump(scaler, "scaler.pkl")
 joblib.dump(FEATURES, "features.pkl")

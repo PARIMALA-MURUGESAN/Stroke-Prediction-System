@@ -4,7 +4,6 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# Load artifacts
 model = joblib.load("stroke_model.pkl")
 scaler = joblib.load("scaler.pkl")
 FEATURES = joblib.load("features.pkl")
@@ -25,7 +24,6 @@ def predict():
         if missing:
             return jsonify({"error": f"Missing fields: {missing}"}), 400
 
-        # Create DataFrame with correct feature names
         input_df = pd.DataFrame([{
             "gender": data["gender"],
             "age": data["age"],
@@ -38,14 +36,8 @@ def predict():
             "bmi": data["bmi"],
             "smoking_status": data["smoking_status"]
         }])
-
-        # Reorder columns
         input_df = input_df[FEATURES]
-
-        # Scale input
         input_scaled = scaler.transform(input_df)
-
-        # Predict probability
         prob = model.predict_proba(input_scaled)[0][1]
 
         risk = "High" if prob >= 0.20 else "Low"
