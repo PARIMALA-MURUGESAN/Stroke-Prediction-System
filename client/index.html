@@ -1,29 +1,169 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Stroke Risk Prediction</title>
-<link rel="stylesheet" href="style.css">
+  <title>Stroke Risk Prediction</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+      background-color: #f4f4f4;
+    }
+    .card {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 400px;
+      margin: auto;
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    select, input {
+      width: 100%;
+      padding: 5px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px;
+      width: 100%;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 18px;
+      text-align: center;
+      padding: 10px;
+      border-radius: 5px;
+      color: white; /* default, will change dynamically */
+    }
+  </style>
 </head>
 <body>
+
 <div class="card">
-  <h2>Stroke Risk Prediction System</h2>
-    <input id="gender" placeholder="Gender (0=Female, 1=Male)">
-    <input id="age" placeholder="Age">
-    <input id="hypertension" placeholder="Hypertension (0/1)">
-    <input id="heart_disease" placeholder="Heart Disease (0/1)">
-    <input id="ever_married" placeholder="Ever Married (0/1)">
-    <input id="work_type" placeholder="Work Type (0-4)">
-    <input id="residence" placeholder="Residence (0=Rural,1=Urban)">
-    <input id="glucose" placeholder="Glucose Level">
-    <input id="bmi" placeholder="BMI">
-    <input id="smoking" placeholder="Smoking Status (0-3)">
+  <h2>Stroke Risk Prediction</h2>
 
-  
-  <button id="predictBtn">predict</button>
+  <label>Gender</label>
+  <select id="gender">
+    <option value="Male">Male</option>
+    <option value="Female">Female</option>
+    <option value="Other">Other</option>
+  </select>
 
-  <h3 id="result"></h3>
+  <input id="age" type="number" placeholder="Age">
+
+  <label>Hypertension</label>
+  <select id="hypertension">
+    <option value="0">No</option>
+    <option value="1">Yes</option>
+  </select>
+
+  <label>Heart Disease</label>
+  <select id="heart_disease">
+    <option value="0">No</option>
+    <option value="1">Yes</option>
+  </select>
+
+  <label>Ever Married</label>
+  <select id="ever_married">
+    <option value="Yes">Yes</option>
+    <option value="No">No</option>
+  </select>
+
+  <label>Work Type</label>
+  <select id="work_type">
+    <option value="Private">Private</option>
+    <option value="Self-employed">Self-employed</option>
+    <option value="Govt_job">Govt_job</option>
+    <option value="children">Children</option>
+    <option value="Never_worked">Never worked</option>
+  </select>
+
+  <label>Residence Type</label>
+  <select id="Residence_type">
+    <option value="Urban">Urban</option>
+    <option value="Rural">Rural</option>
+  </select>
+
+  <input id="avg_glucose_level" type="number" placeholder="Avg Glucose Level">
+  <input id="bmi" type="number" placeholder="BMI">
+
+  <label>Smoking Status</label>
+  <select id="smoking_status">
+    <option value="formerly smoked">Formerly Smoked</option>
+    <option value="never smoked">Never Smoked</option>
+    <option value="smokes">Smokes</option>
+    <option value="Unknown">Unknown</option>
+  </select>
+
+  <button id="predictBtn">Predict</button>
+
+  <div id="result"></div>
 </div>
 
-<script src="script.js"></script>
+<script>
+const predictBtn = document.getElementById("predictBtn");
+const resultDiv = document.getElementById("result");
+
+predictBtn.addEventListener("click", async () => {
+    // Collect input values
+    const data = {
+        gender: document.getElementById("gender").value,
+        age: document.getElementById("age").value,
+        hypertension: parseInt(document.getElementById("hypertension").value),
+        heart_disease: parseInt(document.getElementById("heart_disease").value),
+        ever_married: document.getElementById("ever_married").value,
+        work_type: document.getElementById("work_type").value,
+        Residence_type: document.getElementById("Residence_type").value,
+        avg_glucose_level: parseFloat(document.getElementById("avg_glucose_level").value),
+        bmi: parseFloat(document.getElementById("bmi").value),
+        smoking_status: document.getElementById("smoking_status").value
+    };
+
+    try {
+        const response = await fetch("http://127.0.0.1:5000/predict", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (result.error) {
+            resultDiv.innerText = "Error: " + result.error;
+            resultDiv.style.backgroundColor = "orange";
+        } else {
+            const risk = result.risk_level.trim().toLowerCase();
+
+            if (risk === "high") {
+                resultDiv.innerText = `High Risk: Please consult your doctor. Probability: ${result.stroke_probability}`;
+                resultDiv.style.backgroundColor = "red";
+            } else {
+                resultDiv.innerText = `Low Risk: Keep healthy habits. Probability: ${result.stroke_probability}`;
+                resultDiv.style.backgroundColor = "green";
+            }
+        }
+
+    } catch (err) {
+        resultDiv.innerText = "Error: Could not connect to server.";
+        resultDiv.style.backgroundColor = "orange";
+    }
+});
+</script>
+
 </body>
 </html>
